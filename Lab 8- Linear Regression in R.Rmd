@@ -6,5 +6,92 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+1. Read in data 
+```{r, include = FALSE}
+#Load necessary packages and csv
+library(tidyverse)
 
+salmon <- read_csv("salmon_imports.csv")
+```
+2. Create exploratory scatterplot
+```{r}
+#exploratory scatterplot to check for linear relationship 
+
+salmon_scatter <- ggplot(salmon, aes(x= Year, y = salmon_imports)) +
+  geom_point()
+
+salmon_scatter
+
+#based on an initial scatterplot, it appears that there is a linear relationship between year and salmon imports. There are sevearl outliers but the general trend is positive linear 
+```
+3. Perform linear regression
+```{r}
+#Perform a linear regression to describe trend in total salmon imports from 1990-2017 
+salmon_model <- lm(salmon_imports ~ Year, data = salmon)
+salmon_model
+
+# model: Imports(tons) = 7550(Year) + 33163
+
+#Slope of 7550 means that salmon imports are increasing by 7,550 tons per year 
+#y intercept means that in year 0, 33,163 tons of salmon were imported. This doesn't make any sense in the real world. We can't extrapolate this model beyond these years as it would not make sense for past imports
+
+
+
+```
+
+4. Model Diagnostics
+```{r}
+plot(salmon_model)
+
+#residuals appear fairly randomly distributed around the regression line. There are several outliers that R has identified 
+
+```
+5. Explore model fit and signficance 
+```{r}
+summary(salmon_model)
+#Based on a p value < 0.05, year significantly predicts salmon imports
+#r2 means that 94% of the variance in salmon imports can be explained by x value (year)
+#6% of the variance in salmon imports cannot be explained by x value (year)
+```
+6. Make finalized salmon graph 
+```{r}
+salmon_final_graph <- ggplot(salmon, aes(x = year_actual, y = salmon_imports)) +
+  geom_point() +
+  geom_smooth(method = lm, se = TRUE, size = 0.5, color = "gray20") +
+  theme_bw() +
+  scale_x_continuous( expand = c(0,0), limits = c(1990, 2017)) +
+  labs(x = "Year", y = "US Annual Salmon Imports (1,000 lbs)")
+
+salmon_final_graph
+  
+```
+7. Make predictions using model 
+```{r}
+new_years <- data.frame(Year = c(33, 35, 37, 39))
+
+predicted_imports <- predict(salmon_model, newdata = new_years, interval = "confidence")
+
+predicted_imports
+
+predictions <- data.frame(new_years, predicted_imports)
+
+predictions
+```
+
+8. Find Pearson's R 
+```{r}
+#Use cor.test to find correlation between year and salmon imports
+ 
+correlation_test <- cor.test(salmon$Year, salmon$salmon_imports)
+
+correlation_test
+
+# correlation coefficient: 0.97. This is a strong positive correlation
+```
+9. Results
+```{r}
+#final concluding statement about relationship between salmon imports and year
+
+#simple linear regression reveals that US fresh salmon imports and year are linearly related ()
+```
 
